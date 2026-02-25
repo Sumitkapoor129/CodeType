@@ -113,7 +113,7 @@ res.cookie('token', token, {
   secure: false,
   path: '/'
 });
-    res.redirect('http://localhost:3000'); // Redirect back to frontend
+    res.redirect('https://code-type-psi.vercel.app'); // Redirect back to frontend
   } catch (err) {
     console.error(err);
     res.status(500).send("Auth Error");
