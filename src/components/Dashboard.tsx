@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
     <div className="max-w-3xl mx-auto text-center py-12 animate-fade-in">
         <div className="mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-                Master the Art of <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-500">Code Typing</span>
+                Master the Art of <span className="bg-clip-text bg-gradient-to-r from-brand-400 to-purple-500">Code Typing</span>
             </h1>
             <p className="text-slate-400 text-lg max-w-xl mx-auto">
                 Improve your programming speed and accuracy with real code snippets.
