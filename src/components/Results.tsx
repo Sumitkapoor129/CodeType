@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { calculateWPM, calculateAccuracy } from '../utils/gameUtils';
 import { RefreshCw, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
 import { fetchFeedback } from '../services/geminiService'; // Renamed to snippetService in idea, but keeping existing filename to avoid confusion
 import api from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -18,7 +19,7 @@ interface ResultsProps {
 }
 
 const Results: React.FC<ResultsProps> = ({ stats, onRestart }) => {
-    const { addXP, isAuthenticated } = useAuth();
+    const { addXP, login,isAuthenticated } = useAuth();
     const [feedback, setFeedback] = useState("Analyzing performance...");
     const [saved, setSaved] = useState(false);
     
@@ -97,7 +98,7 @@ const Results: React.FC<ResultsProps> = ({ stats, onRestart }) => {
                  {!isAuthenticated && (
                      <button 
                         className="flex items-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-semibold transition-colors"
-                        onClick={() => alert("Please login to save results.")}
+                        onClick={login}
                     >
                         <Save size={20} />
                         Login to Save
