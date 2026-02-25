@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 8000;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000','https://code-type-psi.vercel.app'],
   credentials: true
 }));
 app.use(express.json());
