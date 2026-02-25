@@ -22,14 +22,14 @@ const Layout: React.FC = () => {
           <div className="flex justify-between items-center h-16">
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 bg-brand-500 rounded flex items-center justify-center text-white">
-                <Terminal size={18} />
-              </div>
-              <span className="text-base sm:text-xl font-bold text-white whitespace-nowrap">
-                Code<span className="text-brand-500">Typer</span>
-              </span>
-            </Link>
+           <a href="/" className="flex items-center gap-2 shrink-0">
+  <div className="w-8 h-8 bg-brand-500 rounded flex items-center justify-center text-white">
+    <Terminal size={18} />
+  </div>
+  <span className="text-base sm:text-xl font-bold text-white whitespace-nowrap">
+    Code<span className="text-brand-500">Typer</span>
+  </span>
+</a>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-2">
