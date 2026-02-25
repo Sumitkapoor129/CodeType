@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = 'https://code-type-psi.vercel.app/auth/google';
+    window.location.href = 'https://codetype-production.up.railway.app/auth/google';
   };
 
   const logout = async () => {
