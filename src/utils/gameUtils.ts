@@ -1,5 +1,4 @@
 export const calculateWPM = (correctChars: number, timeElapsedSeconds: number): number => {
-  if (timeElapsedSeconds === 0) return 0;
   const words = correctChars / 5;
   const minutes = timeElapsedSeconds / 60;
   return Math.round(words / minutes);

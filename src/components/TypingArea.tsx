@@ -20,7 +20,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   duration,
   onFinish,
 }) => {
-  const [codeSnippet, setCodeSnippet] = useState<string>('');
+  const [codeSnippet, setCodeSnippet] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [input, setInput] = useState('');
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -28,10 +28,30 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   const [isActive, setIsActive] = useState(false);
   const [mistakes, setMistakes] = useState(0);
 
-  // ✅ CHANGED HERE
+  const [totalCorrect, setTotalCorrect] = useState(0);
+  const [totalTyped, setTotalTyped] = useState(0);
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const codeContainerRef = useRef<HTMLDivElement>(null);
   const hasFinished = useRef(false);
+
+  // 🔥 Refs to prevent stale state in timer
+  const inputValueRef = useRef(input);
+  const totalCorrectRef = useRef(totalCorrect);
+  const totalTypedRef = useRef(totalTyped);
+  const mistakesRef = useRef(mistakes);
+  const codeSnippetRef = useRef(codeSnippet);
+  const startTimeRef = useRef(startTime);
+
+  // Sync refs with state
+  useEffect(() => {
+    inputValueRef.current = input;
+    totalCorrectRef.current = totalCorrect;
+    totalTypedRef.current = totalTyped;
+    mistakesRef.current = mistakes;
+    codeSnippetRef.current = codeSnippet;
+    startTimeRef.current = startTime;
+  });
 
   // =========================
   // Load Snippet / Restart
@@ -43,6 +63,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     setTimeLeft(duration);
     setIsActive(false);
     setMistakes(0);
+    setTotalCorrect(0);
+    setTotalTyped(0);
     hasFinished.current = false;
 
     const response = await fetchCodeSnippet(language);
@@ -67,53 +89,63 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   };
 
   // =========================
-  // Finish Test
+  // Finish Test (Stable)
   // =========================
-  const finishTest = () => {
+  const finishTest = useCallback(() => {
     if (hasFinished.current) return;
     hasFinished.current = true;
 
-    const correctChars = calculateCorrectChars(input, codeSnippet);
+    const currentCorrect = calculateCorrectChars(
+      inputValueRef.current,
+      codeSnippetRef.current
+    );
+
+    const finalCorrect =
+      totalCorrectRef.current + currentCorrect;
+
+    const finalTyped =
+      totalTypedRef.current + inputValueRef.current.length;
+
     const elapsed =
-      startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+      startTimeRef.current
+        ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+        : 0;
 
     onFinish({
-      correctChars,
-      mistakes,
-      totalChars: input.length,
+      correctChars: finalCorrect,
+      mistakes: mistakesRef.current,
+      totalChars: finalTyped,
       timeElapsed: elapsed,
       language,
     });
 
     setIsActive(false);
     setTimeLeft(0);
-  };
-
-  const handleEndTest = () => {
-    finishTest();
-  };
+  }, [language, onFinish]);
 
   // =========================
-  // Timer Logic
+  // Stable Timer (No Pausing)
   // =========================
   useEffect(() => {
-    let interval: number;
+    if (!isActive) return;
 
-    if (isActive && timeLeft > 0) {
-      interval = window.setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            finishTest();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          finishTest();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [isActive]);
+  }, [isActive, finishTest]);
 
+  // =========================
+  // Calculate Correct Chars
+  // =========================
   const calculateCorrectChars = (typed: string, target: string) => {
     let correct = 0;
     for (let i = 0; i < typed.length; i++) {
@@ -149,6 +181,11 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     }
 
     if (val.length === codeSnippet.length) {
+      const correct = calculateCorrectChars(val, codeSnippet);
+
+      setTotalCorrect((prev) => prev + correct);
+      setTotalTyped((prev) => prev + val.length);
+
       loadNextSnippet();
     }
   };
@@ -193,15 +230,12 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           <span
             key={index}
             className="block h-6 w-full"
-          ></span>
+          />
         );
       }
 
       return (
-        <span
-          key={index}
-          className={`${className} relative`} // ✅ caret fix
-        >
+        <span key={index} className={`${className} relative`}>
           {index === input.length && (
             <span
               id="caret"
@@ -226,7 +260,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
         <div className="flex gap-3">
           <button
-            onClick={handleEndTest}
+            onClick={finishTest}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm"
           >
             End Test
@@ -241,7 +275,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         </div>
       </div>
 
-      {/* Code Area */}
       <div className="relative min-h-[400px] bg-dark-bg rounded-xl p-8 border border-slate-700 shadow-inner cursor-text overflow-hidden">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center text-brand-500">
@@ -259,7 +292,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           </div>
         )}
 
-        {/* ✅ TEXTAREA INSTEAD OF INPUT */}
         <textarea
           ref={inputRef}
           className="opacity-0 absolute top-0 left-0 w-full h-full resize-none outline-none"
